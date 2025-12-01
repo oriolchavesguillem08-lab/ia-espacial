@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>IA en l'Exploració Espacial</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+/* ------------------------ ESTILS COMPLETS ------------------------ */
+
+body { margin:0; padding:0; font-family:'Poppins',sans-serif; background:#050b1a; color:#f0f0f0; overflow-x:hidden; scroll-behavior:smooth; }
+
+/*TITOLS*/
+h1 { font-weight:800; letter-spacing:1px; font-size:clamp(40px,6vw,70px); }
+.gradient { background:linear-gradient(90deg,#4dabff,#8c52ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+
+h2.h2-title { font-weight:800; font-size:clamp(28px,4vw,42px); margin-bottom:50px; text-align:center; }
+.h2-white { color:white; }
+.h2-gradient { background:linear-gradient(90deg,#4dabff,#8c52ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+
+/* HERO */
+.hero { height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:0 20px; opacity:0; transform:translateY(50px); transition:1s ease-out; }
+.subtitle { margin-top:20px; max-width:700px; font-size:clamp(16px,1.5vw,22px); opacity:0.9; }
+.main-btn { margin-top:40px; padding:18px 50px; font-size:20px; border:none; border-radius:50px; background:linear-gradient(90deg,#0099ff,#8c52ff); color:white; cursor:pointer; transition:.3s; }
+.main-btn:hover { transform:scale(1.08); box-shadow:0 0 20px rgba(77,171,255,0.6); }
+
+/* FONS */
+canvas#interactiveCanvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:-2; pointer-events:none; }
+#stars,#shootingStars,#planets { position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; pointer-events:none; }
+.star,.shooting-star { position:absolute; border-radius:50%; }
+.star { width:2px; height:2px; background:white; opacity:0.8; }
+.shooting-star { width:2px; height:80px; background:linear-gradient(45deg,white,rgba(255,255,255,0)); opacity:0.8; transform:rotate(45deg); }
+
+/* SECCIONS */
+section { padding:90px 12%; opacity:0; transform:translateY(50px); transition:1s ease-out; }
+
+.timeline { position:relative; margin:60px auto; max-width:900px; opacity:0; transform:translateY(50px); transition:1s ease-out; }
+.timeline::before { content:""; position:absolute; width:4px; background:#4dabff; top:0; bottom:0; left:50%; transform:translateX(-50%); }
+.event { padding:25px; background:rgba(255,255,255,0.08); border-radius:20px; width:45%; position:relative; transition:.3s; cursor:pointer; opacity:0; transform:translateY(50px); }
+.event.left{left:0;} 
+.event.right{left:55%;}
+.event:not(:last-child){margin-bottom:60px;}
+.event:hover{background:rgba(77,171,255,0.3); box-shadow:0 0 20px rgba(77,171,255,0.6); }
+
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:35px; }
+.flip-card { background:rgba(255,255,255,0.05); border-radius:15px; padding:20px; text-align:center; font-size:16px; opacity:0; transform:translateY(50px); transition:1s ease-out; }
+.flip-card h3 { margin-bottom:15px; font-size:20px; font-weight:700; }
+
+.chart-container{ max-width:900px; margin:50px auto; opacity:0; transform:translateY(50px); transition:1s ease-out; }
+canvas{ width:100% !important; height:400px; background:rgba(255,255,255,0.08); border-radius:15px; }
+
+/* CLASSIFICADOR */
+.classifier-box { background:rgba(255,255,255,0.05); padding:40px; border-radius:20px; margin-top:40px; text-align:center; font-size:18px; opacity:0; transform:translateY(50px); transition:1s ease-out; }
+input[type=file] { margin-top:20px; padding:15px 25px; font-size:16px; border-radius:15px; border:none; cursor:pointer; background:linear-gradient(90deg,#4dabff,#8c52ff); color:white; transition:.3s; }
+#preview { margin-top:20px; max-width:350px; border-radius:15px; border:2px solid rgba(77,171,255,0.5); }
+.result { margin-top:20px; font-size:20px; font-weight:700; }
+.bar-graph { display:flex; justify-content:center; gap:10px; margin-top:20px; }
+
+footer { text-align:center; opacity:0.5; padding:50px 0; }
+</style>
+</head>
+
+<body>
+
+<canvas id="interactiveCanvas"></canvas>
+<div id="stars"></div>
+<div id="shootingStars"></div>
+<div id="planets"></div>
+
+<!-- HERO -->
+<div class="hero">
+<h1> La <span class="gradient">Intel·ligència Artificial</span> en l'Exploració Espacial </h1>
+<p class="subtitle">Una visió formal, completa i visual del paper clau de la IA en l’era espacial moderna.</p>
+<button class="main-btn" onclick="document.getElementById('timeline').scrollIntoView({behavior:'smooth'});">Començar ↓</button>
+</div>
+
+<!-- TIMELINE -->
+<section id="timeline">
+<h2 class="h2-title"><span class="h2-white">Evolució de la</span> <span class="h2-gradient">IA Espacial</span></h2>
+<div class="timeline">
+    <div class="event left"><h3>1998 – Deep Space 1</h3></div>
+    <div class="event right"><h3>2012 – Curiosity</h3></div>
+    <div class="event left"><h3>2020 – Perseverance</h3></div>
+    <div class="event right"><h3>2023 – JWST + IA</h3></div>
+</div>
+</section>
+
+<!-- GRAFIC 1 -->
+<section id="grafic1">
+<h2 class="h2-title"><span class="h2-white">Autonomia vs</span> <span class="h2-gradient">Intervenció Humana</span></h2>
+<div class="chart-container"><canvas id="chartIA"></canvas></div>
+</section>
+
+<!-- GRAFIC 2 -->
+<section id="grafic2">
+<h2 class="h2-title"><span class="h2-white">Objectes Celestials</span> <span class="h2-gradient">Detectats per IA</span></h2>
+<div class="chart-container"><canvas id="chartObjects"></canvas></div>
+</section>
+
+<!-- APLICACIONS -->
+<section id="aplicacions">
+<h2 class="h2-title"><span class="h2-white">Aplicacions</span> <span class="h2-gradient">Principals de la IA</span></h2>
+
+<div class="grid">
+<div class="flip-card"><h3>Navegació Autònoma</h3><p>L'IA ajusta trajectòries en temps real.</p></div>
+<div class="flip-card"><h3>Descobriment d’Exoplanetes</h3><p>Xarxes neuronals per detectar planetes.</p></div>
+<div class="flip-card"><h3>Classificació d’Objectes Celestials</h3><p>Identificació de galàxies i estrelles.</p></div>
+<div class="flip-card"><h3>Anàlisi de Dades</h3><p>Processament massiu de dades astronòmiques.</p></div>
+</div>
+</section>
+
+<!-- CLASSIFICADOR -->
+<section id="classificador">
+<h2 class="h2-title"><span class="h2-white">Mini Classificador</span><span class="h2-gradient"> d’Imatges</span></h2>
+
+<div class="classifier-box">
+<p>Carrega una imatge per classificar.</p>
+<input type="file" id="inputImg" accept="image/*"/>
+<img id="preview"/>
+<p id="resultText" class="result"></p>
+<div id="barGraph" class="bar-graph"></div>
+</div>
+</section>
+
+<footer>Treball de Recerca — IA en l'Exploració Espacial — ORIOL CHAVES</footer>
+
+<!-- ------------------------ JS COMPLET ------------------------ -->
+<script>
+/* Estrelles */
+const stars=document.getElementById("stars");
+for(let i=0;i<200;i++){
+  const s=document.createElement("div");
+  s.classList.add("star");
+  s.style.width=s.style.height=Math.random()*3+1+"px";
+  s.style.top=Math.random()*100+"%";
+  s.style.left=Math.random()*100+"%";
+  stars.appendChild(s);
+}
+
+/* Shooting stars */
+const shootingStars=document.getElementById("shootingStars");
+function createShootingStar(){
+  const star=document.createElement("div");
+  star.classList.add("shooting-star");
+  star.style.left=Math.random()*innerWidth+"px";
+  star.style.top=Math.random()*innerHeight+"px";
+  shootingStars.appendChild(star);
+  setTimeout(()=>star.remove(),1000);
+}
+setInterval(()=>{ if(Math.random()<0.4) createShootingStar(); },1200);
+
+/* Charts */
+new Chart(document.getElementById("chartIA"),{
+    type:'line',
+    data:{
+        labels:["1998","2012","2020","2023","2025"],
+        datasets:[
+            {label:"Autonomia IA (%)", data:[10,40,70,85,90], borderColor:"#4dabff", backgroundColor:"rgba(77,171,255,0.2)", borderWidth:3, tension:0.4},
+            {label:"Intervenció Humana (%)", data:[90,60,30,15,10], borderColor:"#ff47d8", backgroundColor:"rgba(255,71,216,0.2)", borderWidth:3, tension:0.4}
+        ]
+    },
+    options:{responsive:true}
+});
+
+new Chart(document.getElementById("chartObjects"),{
+    type:'bar',
+    data:{
+        labels:["Planetes","Galàxies","Estrelles","Supernoves"],
+        datasets:[{label:"Objectes Detectats", data:[120,300,500,80], backgroundColor:["#4dabff","#8c52ff","#00d4ff","#ff47d8"]}]
+    },
+    options:{responsive:true}
+});
+
+/* CLASSIFICADOR */
+document.getElementById("inputImg").addEventListener("change",function(){
+  const file=this.files[0];
+  const preview=document.getElementById("preview");
+  const result=document.getElementById("resultText");
+  const barGraph=document.getElementById("barGraph");
+
+  if(!file) return;
+  preview.src=URL.createObjectURL(file);
+
+  const categories=["Planeta","Galàxia","Estrella","Supernova"];
+  const probs=categories.map(()=>Math.random());
+  const maxIndex=probs.indexOf(Math.max(...probs));
+
+  result.innerHTML=`Classificació estimada: <b>${categories[maxIndex]}</b> (${Math.round(probs[maxIndex]*100)}%)`;
+
+  barGraph.innerHTML="";
+  categories.forEach((cat,i)=>{
+    const bar=document.createElement("div");
+    bar.style.height=(probs[i]*120)+"px";
+    bar.style.width="20px";
+    bar.style.background=`hsl(${i*90},80%,60%)`;
+    barGraph.appendChild(bar);
+  });
+});
+
+/* Fade-in efectes */
+const observer=new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      entry.target.style.opacity=1;
+      entry.target.style.transform='translateY(0)';
+    }
+  });
+},{threshold:0.2});
+
+document.querySelectorAll('.hero, section, .flip-card, .classifier-box, .timeline, .event, .chart-container')
+.forEach(el=>observer.observe(el));
+
+/* Partícules */
+const canvas=document.getElementById("interactiveCanvas");
+const ctx=canvas.getContext("2d");
+canvas.width=innerWidth; canvas.height=innerHeight;
+
+let particles=[];
+for(let i=0;i<150;i++){
+  particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*2+1,dx:(Math.random()-0.5)*0.5,dy:(Math.random()-0.5)*0.5});
+}
+
+function animate(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles.forEach(p=>{
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle="white"; ctx.fill();
+    p.x+=p.dx; p.y+=p.dy;
+    if(p.x<0||p.x>canvas.width)p.dx*=-1;
+    if(p.y<0||p.y>canvas.height)p.dy*=-1;
+  });
+  requestAnimationFrame(animate);
+}
+animate();
+
+/* Planetes orbitants */
+const planetsContainer = document.getElementById("planets");
+const planetImgs=[
+  "https://upload.wikimedia.org/wikipedia/commons/c/c2/Jupiter_by_Cassini-Huygens.jpg",
+  "https://upload.wikimedia.org/wikipedia/commons/0/02/Mars_mosaic.jpg"
+];
+let planets=[];
+for(let i=0;i<5;i++){
+  const p=document.createElement("div");
+  let size=80+Math.random()*100;
+  p.style.width=p.style.height=size+"px";
+  p.centerX=Math.random()*innerWidth;
+  p.centerY=Math.random()*innerHeight;
+  p.radius=50+Math.random()*100;
+  p.angle=Math.random()*Math.PI*2;
+  p.speed=0.01+Math.random()*0.02;
+  p.style.backgroundImage=`url(${planetImgs[i%planetImgs.length]})`;
+  p.style.backgroundSize="cover";
+  p.style.borderRadius="50%";
+  p.style.position="absolute";
+  planetsContainer.appendChild(p);
+  planets.push(p);
+}
+function animatePlanets(){
+  planets.forEach(p=>{
+    p.angle+=p.speed;
+    p.style.left=p.centerX+Math.cos(p.angle)*p.radius-size/2+"px";
+    p.style.top=p.centerY+Math.sin(p.angle)*p.radius-size/2+"px";
+  });
+  requestAnimationFrame(animatePlanets);
+}
+animatePlanets();
+
+</script>
+</body>
+</html>
